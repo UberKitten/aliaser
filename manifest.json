@@ -15,6 +15,7 @@
     ],
     "persistent": false
   },
+  "browser_action": {},
   "options_page": "src/options/index.html",
   "permissions": [
     "storage"
@@ -26,7 +27,8 @@
       ],
       "all_frames": true,
       "js": [
-        "src/inject/inject.js"
+        "src/inject/inject.js",
+        "src/inject/psl.min.js"
       ]
     }
   ]

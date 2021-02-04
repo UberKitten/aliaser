@@ -17,8 +17,10 @@ const generateAddress = (domain) => {
   if (!domain || !hostname) {
     return null
   }
-  const alias = hostname.split('.').reverse().join('.')
-  return `${alias}@${domain}`
+  const alias = psl.get(hostname)
+  const time = Math.floor(Date.now() / 1000).toString(36)
+
+  return `${alias}-${time}@${domain}`
 }
 
 const saveAlias = (address) => {
@@ -33,16 +35,30 @@ const saveAlias = (address) => {
 
 const onload = (domain) => {
   const emails = document.querySelectorAll('input[type="email"]')
+  const address = generateAddress(domain)
+  
   if (emails.length) {
-    const existing = store[hostname]
-    const address = existing ? existing.address : generateAddress(domain)
     if (address) {
       emails.forEach((el) => {
         el.value = address
+        
+        if (el.form) {
+          el.form.addEventListener('submit', function() {
+            saveAlias(address)
+          });
+        } else {
+          saveAlias(address)
+        }
       })
-      if (!existing) {
-        saveAlias(address)
-      }
     }
   }
+  
+  chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
+      if (request.clipboard) {
+        navigator.clipboard.writeText(address)
+      }
+    }
+  );
 }
